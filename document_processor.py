@@ -18,15 +18,17 @@ def get_document_from_url(url: str) -> str:
         print(f"Error downloading or processing the PDF: {e}")
         return None
 
-def get_text_chunks(text: str) -> list[str]:
-    """
-    Splits a long text into smaller, semantically coherent chunks.
-    This is crucial for both embedding accuracy and managing token limits.
-    """
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
-        length_function=len
-    )
-    chunks = text_splitter.split_text(text)
+def get_text_chunks(text: str, chunk_size: int = 1000, overlap: int = 200):
+    print(f"[DocProcessor] Starting text chunking process...")
+    print(f"[DocProcessor] Input text length: {len(text)} characters")
+    print(f"[DocProcessor] Chunk size: {chunk_size}, Overlap: {overlap}")
+    
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = min(start + chunk_size, len(text))
+        chunks.append(text[start:end])
+        start += chunk_size - overlap
+    
+    print(f"[DocProcessor] Generated {len(chunks)} chunks")
     return chunks

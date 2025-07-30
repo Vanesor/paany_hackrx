@@ -3,12 +3,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+GOOGLE_API_KEY = "AIzaSyApXI8iR4gBbWnKrbpLMhg5XESB_ebdLdE"
 TOKEN = os.getenv("TOKEN")
 
-EMBEDDING_MODEL_NAME = "BAAI/bge-large-en-v1.5"
+# EMBEDDING_MODEL_NAME = "BAAI/bge-base-en-v1.5"
+EMBEDDING_MODEL_NAME = "models/embedding-001"
 
-GENERATIVE_MODEL_NAME = "gemini-1.5-flash-latest"
+GENERATIVE_MODEL_NAME = "gemini-2.0-flash"
 
 TOP_K_RESULTS = 5
 

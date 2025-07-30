@@ -2,6 +2,7 @@ from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, HttpUrl
 import uvicorn
 import dotenv
+import time
 from vector_store import VectorStore
 from document_processor import get_document_from_url, get_text_chunks
 from llm_handler import generate_answer
@@ -24,6 +25,7 @@ cache = {}
 
 @app.post("/api/v1/hackrx/run", response_model=QueryResponse, tags=["Query System"])
 async def run_submission(request: QueryRequest, authorization: str = Header(None)):
+    start_time = time.time()
     """
     Processes a document and answers a list of questions about it.
     This endpoint implements a "process once, query many" strategy for speed.
@@ -55,7 +57,9 @@ async def run_submission(request: QueryRequest, authorization: str = Header(None
         
         answer = generate_answer(context=context_str, question=question)
         final_answers.append(answer)
-
+    end_time = time.time()
+    execution_time = end_time - start_time
+    print(f"Total execution time: {execution_time:.2f} seconds")
     return QueryResponse(answers=final_answers)
 
 if __name__ == "__main__":
