@@ -7,7 +7,10 @@ async def generate_answer(context: str, question: str) -> str:
     """
     Asynchronously generates an answer using the Gemini API.
     """
+    print(f"[LLM] Processing question: {question[:100]}...")
+    
     if not context:
+        print("[LLM] Warning: No context provided")
         return "Could not retrieve relevant context to answer the question."
 
     prompt = PROMPT_TEMPLATE.format(context=context, question=question)
