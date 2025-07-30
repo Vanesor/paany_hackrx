@@ -26,7 +26,7 @@ class HealthCheckResponse(BaseModel):
     status: str = Field(..., example="ok")
     message: str = Field(..., example="Service is running")
 
-@app.get("/health", response_model=HealthCheckResponse, tags=["Monitoring"])
+@app.get("/api/health", response_model=HealthCheckResponse, tags=["Monitoring"])
 async def health_check():
     return {"status": "ok", "message": "Service is running"}
 

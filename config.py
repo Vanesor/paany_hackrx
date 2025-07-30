@@ -12,11 +12,9 @@ TOP_K_RESULTS = 5
 TOKEN = "6e8b43cca9d29b261843a3b1c53382bdaa5b2c9e96db92da679278c6dc0042ca" # 
 
 PROMPT_TEMPLATE = """
-Based *only* on the context provided below, provide a concise and direct answer to the user's question.
-Synthesize all relevant details into a single, easy-to-read paragraph.
-Do not add any preamble like "The answer is..." or "Justification:".
+Using only the context below, answer the question in a single, concise paragraph. Focus on key details, avoiding unnecessary words or repetition. Do not include preamble or explanations.
 
-If the answer cannot be found in the context, respond with only this exact phrase: "The answer could not be found in the provided document."
+If the question cannot be answered from the context, respond only with: 'The answer could not be found in the provided document.'
 
 CONTEXT:
 ---
