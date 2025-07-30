@@ -2,34 +2,26 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
-GOOGLE_API_KEY = "AIzaSyApXI8iR4gBbWnKrbpLMhg5XESB_ebdLdE"
-TOKEN = os.getenv("TOKEN")
-
-# EMBEDDING_MODEL_NAME = "BAAI/bge-base-en-v1.5"
-EMBEDDING_MODEL_NAME = "models/embedding-001"
-
-GENERATIVE_MODEL_NAME = "gemini-2.0-flash"
-
+# EMBEDDING_MODEL_NAME = "BAAI/bge-base-en-v1.5" 
+EMBEDDING_MODEL_NAME= "models/embedding-001"
+GENERATIVE_MODEL_NAME = "gemini-2.5-flash"
 TOP_K_RESULTS = 5
 
+TOKEN = "6e8b43cca9d29b261843a3b1c53382bdaa5b2c9e96db92da679278c6dc0042ca" # 
+
 PROMPT_TEMPLATE = """
-SYSTEM INSTRUCTION:
-You are a highly intelligent AI assistant tasked with analyzing legal and policy documents.
-Your task is to answer the user's question based *ONLY* on the provided context.
-Do not use any external knowledge.
+Based *only* on the context provided below, provide a concise and direct answer to the user's question.
+Synthesize all relevant details into a single, easy-to-read paragraph.
+Do not add any preamble like "The answer is..." or "Justification:".
 
-Your response MUST be in two parts:
-1.  **Direct Answer:** A clear and concise answer to the user's question.
-2.  **Justification:** The detailed reasoning for your answer, including direct quotes from the provided context to support your conclusion.
-
-If the context does not contain the answer, you must state: "The answer could not be found in the provided context."
+If the answer cannot be found in the context, respond with only this exact phrase: "The answer could not be found in the provided document."
 
 CONTEXT:
 ---
 {context}
 ---
 
-QUESTION:
-{question}
+QUESTION: {question}
 """
