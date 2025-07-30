@@ -3,7 +3,6 @@ uvicorn
 python-dotenv
 requests
 PyMuPDF
-langchain
 sentence-transformers
 faiss-cpu
 google-generativeai

@@ -1,6 +1,5 @@
 import requests
 import fitz  # PyMuPDF?
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 def get_document_from_url(url: str) -> str:
     """

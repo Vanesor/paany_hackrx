@@ -12,14 +12,23 @@ TOP_K_RESULTS = 5
 TOKEN = "6e8b43cca9d29b261843a3b1c53382bdaa5b2c9e96db92da679278c6dc0042ca" # 
 
 PROMPT_TEMPLATE = """
-Using only the context below, answer the question in a single, concise paragraph. Focus on key details, avoiding unnecessary words or repetition. Do not include preamble or explanations.
+Answer the question using only the provided context. Be direct and factual.
 
-If the question cannot be answered from the context, respond only with: 'The answer could not be found in the provided document.'
+Format requirements:
+- Single sentence answer (maximum 30 words)
+- Include key numbers, timeframes, and conditions
+- Use simple, clear language
+- No explanatory phrases or justifications
+- If not found: "The answer could not be found in the provided document."
+
+Examples of good answers:
+- "The grace period is 30 days after the premium due date."
+- "Pre-existing diseases are covered after 36 months of continuous coverage."
+- "Room rent is capped at 1% of Sum Insured per day for Plan A."
 
 CONTEXT:
----
 {context}
----
 
 QUESTION: {question}
-"""
+
+DIRECT ANSWER:"""
