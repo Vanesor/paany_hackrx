@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-
+PRIMARY_API_KEY = os.getenv("GOOGLE_API_KEY")
+BACKUP_API_KEY = os.getenv("GOOGLE_API_KEY_BACKUP")
 # EMBEDDING_MODEL_NAME = "BAAI/bge-base-en-v1.5" 
 EMBEDDING_MODEL_NAME= "models/embedding-001"
 GENERATIVE_MODEL_NAME = "gemini-2.5-flash"
