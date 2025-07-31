@@ -1,5 +1,4 @@
 import numpy as np
-import faiss
 import asyncio
 import google.generativeai as genai
 from config import PRIMARY_API_KEY, BACKUP_API_KEY, EMBEDDING_MODEL_NAME

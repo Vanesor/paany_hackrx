@@ -36,6 +36,6 @@ ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Expose the port and define the healthcheck
-EXPOSE 10000
-HEALTHCHECK CMD curl --fail http://localhost:10000/api/health || exit 1
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
+EXPOSE 4000
+HEALTHCHECK CMD curl --fail http://localhost:4000/api/health || exit 1
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "4000"]
