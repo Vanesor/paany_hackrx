@@ -8,7 +8,7 @@ from vector_store import VectorStore
 from document_processor import get_document_from_url, get_text_chunks
 from llm_handler import generate_answer
 from config import TOP_K_RESULTS, TOKEN
-from cache import redis_client, get_vector_store, set_vector_store
+from cache import get_cached_data, set_cached_data, redis_client
 
 app = FastAPI(
     title="Intelligent Query-Retrieval System",
@@ -35,18 +35,27 @@ async def run_submission(request: QueryRequest, authorization: str = Header(None
     start_time = time.time()
     if not authorization or authorization != f"Bearer {TOKEN}":
         raise HTTPException(status_code=401, detail="Unauthorized")
-
     doc_url = str(request.documents)
-    vector_store = get_vector_store(doc_url)
-    if not vector_store:
+    
+    vector_store = VectorStore()
+    cached_data = get_cached_data(doc_url)
+
+    if cached_data:
+        # Unpack the cached index and chunks
+        vector_store.index, vector_store.chunks = cached_data
+    else:
         print(f"Vector store not in cache. Processing: {doc_url}")
-        document_text = get_document_from_url(doc_url)
+        document_text = await get_document_from_url(doc_url)
         if not document_text:
             raise HTTPException(status_code=400, detail="Failed to retrieve or process the document.")
+        
         chunks = get_text_chunks(document_text)
-        vector_store = VectorStore()
-        vector_store.build_index(chunks)
-        set_vector_store(doc_url, vector_store)
+        await vector_store.build_index(chunks)
+        
+        # Cache the NumPy index and the list of chunks together
+        if vector_store.index is not None:
+            data_to_cache = (vector_store.index, vector_store.chunks)
+            set_cached_data(doc_url, data_to_cache)
 
     tasks = []
     final_answers = {} 
@@ -64,10 +73,8 @@ async def run_submission(request: QueryRequest, authorization: str = Header(None
                 context_chunks = vector_store.search(q, k=TOP_K_RESULTS)
                 context_str = "\n---\n".join(context_chunks)
                 answer = await generate_answer(context=context_str, question=q)
-                
                 redis_client.setex(key, 3600, answer)
                 final_answers[index] = answer
-
             tasks.append(get_answer_task(question, cache_key, i))
 
     if tasks:

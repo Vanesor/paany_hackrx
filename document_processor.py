@@ -1,20 +1,20 @@
-import requests
-import fitz  # PyMuPDF?
+import httpx
+import fitz
 
-def get_document_from_url(url: str) -> str:
+async def get_document_from_url(url: str) -> str:
     """
-    Downloads a PDF from a URL and extracts its text content.
-    Uses PyMuPDF for fast and accurate text extraction.
+    Asynchronously downloads a PDF from a URL and extracts its text content.
     """
     try:
-        response = requests.get(url, timeout=30)
-        response.raise_for_status()  
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, timeout=30)
+            response.raise_for_status()
         
         with fitz.open(stream=response.content, filetype="pdf") as doc:
             text = "".join(page.get_text() for page in doc)
         return text
-    except requests.RequestException as e:
-        print(f"Error downloading or processing the PDF: {e}")
+    except httpx.RequestError as e:
+        print(f"Error downloading the PDF: {e}")
         return None
 
 def get_text_chunks(text: str, chunk_size: int = 1000, overlap: int = 200):
