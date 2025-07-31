@@ -1,5 +1,6 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, status
 from pydantic import BaseModel, HttpUrl, Field
+import redis
 import uvicorn
 import time
 import asyncio
@@ -36,7 +37,14 @@ class HealthCheckResponse(BaseModel):
 
 @app.get("/api/health", response_model=HealthCheckResponse, tags=["Monitoring"])
 async def health_check():
-    return {"status": "ok", "message": "Service is running"}
+    try:
+        redis_client.ping()
+        return {"status": "ok", "message": "Service is running and Redis is connected"}
+    except redis.exceptions.ConnectionError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Service is running, but Redis is unavailable: {e}"
+        )
 
 @app.post("/api/v1/hackrx/run", response_model=QueryResponse, tags=["Query System"])
 async def run_submission(request: QueryRequest, authorization: str = Header(None)):
