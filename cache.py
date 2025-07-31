@@ -1,14 +1,11 @@
-# cache.py
 import redis
 import pickle
-import os
 import logging
+from config import REDIS_URL
 
-# Get logger for this module
 logger = logging.getLogger("cache")
 
-REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
-redis_client = redis.Redis(host=REDIS_HOST, port=6379, db=0)
+redis_client = redis.from_url(REDIS_URL, decode_responses=False)
 
 def set_cached_data(key: str, data: object):
     """Serializes a Python object using pickle and stores it in Redis."""

@@ -35,7 +35,10 @@ COPY --chown=appuser:appuser . .
 ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+# Set default port (can be overridden by environment variable)
+ENV PORT=10000
+
 # Expose the port and define the healthcheck
-EXPOSE 10000
-HEALTHCHECK CMD curl --fail http://localhost:10000/api/health || exit 1
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "10000"]
+EXPOSE $PORT
+HEALTHCHECK CMD curl --fail http://localhost:$PORT/api/health || exit 1
+CMD ["python", "main.py"]

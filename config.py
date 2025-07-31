@@ -2,10 +2,8 @@ import os
 import logging
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Configure logging
 LOG_LEVEL = os.getenv("LOG_LEVEL", "DEBUG")
 logging.basicConfig(
     level=getattr(logging, LOG_LEVEL),
@@ -13,11 +11,12 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
-# API Keys
 PRIMARY_API_KEY = os.getenv("GOOGLE_API_KEY")
 BACKUP_API_KEY = os.getenv("GOOGLE_API_KEY_BACKUP")
 
-# Model configurations
+PORT = int(os.getenv("PORT", 10000))
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+
 # EMBEDDING_MODEL_NAME = "BAAI/bge-base-en-v1.5" 
 EMBEDDING_MODEL_NAME= "models/embedding-001"
 GENERATIVE_MODEL_NAME = "gemini-2.5-flash"

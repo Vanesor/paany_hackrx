@@ -8,10 +8,9 @@ import logging
 from vector_store import VectorStore
 from document_processor import get_document_from_url, get_text_chunks
 from llm_handler import generate_answer
-from config import TOP_K_RESULTS, TOKEN
+from config import TOP_K_RESULTS, TOKEN, PORT
 from cache import get_cached_data, set_cached_data, redis_client
 
-# Configure logging
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -55,7 +54,6 @@ async def run_submission(request: QueryRequest, authorization: str = Header(None
     cached_data = get_cached_data(doc_url)
 
     if cached_data:
-        # Unpack the cached index and chunks
         logger.info(f"Cache hit: Vector store found in cache")
         vector_store.index, vector_store.chunks = cached_data
         logger.debug(f"Loaded {len(vector_store.chunks)} chunks from cache")
@@ -73,7 +71,6 @@ async def run_submission(request: QueryRequest, authorization: str = Header(None
         await vector_store.build_index(chunks)
         logger.debug("Vector index built successfully")
         
-        # Cache the NumPy index and the list of chunks together
         if vector_store.index is not None:
             logger.info("Caching vector store for future use")
             data_to_cache = (vector_store.index, vector_store.chunks)
@@ -128,4 +125,5 @@ async def run_submission(request: QueryRequest, authorization: str = Header(None
     return QueryResponse(answers=ordered_answers)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=10000)
+    logger.info(f"Starting server on port {PORT}")
+    uvicorn.run(app, host="0.0.0.0", port=PORT)
