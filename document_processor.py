@@ -4,9 +4,13 @@ import fitz  # PyMuPDF
 import docx  # python-docx
 import io
 import email
+import time
+import logging
 from email import policy
 from bs4 import BeautifulSoup
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+logger = logging.getLogger(__name__)
 
 # --- Text Extraction Helpers ---
 
@@ -64,39 +68,66 @@ async def get_document_from_url(url: str) -> str | None:
     Asynchronously downloads a document from a URL, detects its type,
     and extracts its text content.
     """
+    start_time = time.time()
+    logger.info(f"📥 Downloading document from: {url[:50]}...")
+    
     try:
+        download_start = time.time()
         async with httpx.AsyncClient() as client:
             response = await client.get(url, timeout=30, follow_redirects=True)
             response.raise_for_status()
+        download_time = time.time() - download_start
 
         content = response.content
         content_type = response.headers.get("content-type", "").lower()
+        file_size = len(content)
 
-        print(f"Downloaded document with Content-Type: {content_type}")
+        logger.info(f"✅ Downloaded {file_size} bytes in {download_time:.2f}s - Content-Type: {content_type}")
 
+        extract_start = time.time()
         if "pdf" in content_type:
-            return _extract_text_from_pdf(content)
+            logger.debug("📄 Extracting text from PDF...")
+            text = _extract_text_from_pdf(content)
         elif "vnd.openxmlformats-officedocument.wordprocessingml.document" in content_type or url.endswith(".docx"):
-            return _extract_text_from_docx(content)
+            logger.debug("📝 Extracting text from DOCX...")
+            text = _extract_text_from_docx(content)
         elif "message/rfc822" in content_type or url.endswith(".eml") or url.endswith(".msg"):
-            return _extract_text_from_email(content)
+            logger.debug("📧 Extracting text from email...")
+            text = _extract_text_from_email(content)
         else:
-            print(f"Unsupported document type: {content_type}. Please provide a PDF, DOCX, or EML file.")
+            logger.error(f"❌ Unsupported document type: {content_type}")
             return None
 
+        extract_time = time.time() - extract_start
+        total_time = time.time() - start_time
+        text_length = len(text)
+        
+        logger.info(f"✅ Extracted {text_length} characters in {extract_time:.2f}s (total: {total_time:.2f}s)")
+        return text
+
     except httpx.RequestError as e:
-        print(f"Error downloading the document: {e}")
+        total_time = time.time() - start_time
+        logger.error(f"❌ Download failed after {total_time:.2f}s: {e}")
         return None
     except Exception as e:
-        print(f"Error processing document: {e}")
+        total_time = time.time() - start_time
+        logger.error(f"❌ Processing failed after {total_time:.2f}s: {e}")
         return None
 
 def get_text_chunks(text: str) -> list[str]:
     """Splits text into semantically coherent chunks."""
+    start_time = time.time()
+    logger.debug(f"✂️  Splitting {len(text)} characters into chunks...")
+    
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=800,
         chunk_overlap=150,
         separators=["\n\n", "\n", ". ", "! ", "? ", " ", ""],
         length_function=len,
     )
-    return splitter.split_text(text)
+    chunks = splitter.split_text(text)
+    
+    split_time = time.time() - start_time
+    logger.info(f"✅ Split into {len(chunks)} chunks in {split_time:.3f}s")
+    
+    return chunks

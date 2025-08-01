@@ -1,36 +1,36 @@
 # config.py
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
 # --- Logging Configuration ---
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 logging.basicConfig(
-    level=getattr(logging, LOG_LEVEL),
-    format="%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    datefmt='%H:%M:%S'
 )
+logger = logging.getLogger(__name__)
 
 # --- API Keys & Tokens ---
 API_KEYS_STRING = os.getenv("GOOGLE_API_KEYS", "")
-print(API_KEYS_STRING)
 API_KEYS = [key.strip() for key in API_KEYS_STRING.split(',') if key.strip()]
 TOKEN = os.getenv("TOKEN")
 
 # --- Model Configuration ---
 EMBEDDING_MODEL_NAME = "models/embedding-001"
-GENERATIVE_MODEL_NAME = "gemini-1.5-flash-latest"
+GENERATIVE_MODEL_NAME = "gemini-2.5-flash"
 RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 # --- RAG Pipeline Configuration ---
-TOP_K_RESULTS = 10
-HYBRID_SEARCH_ALPHA = 0.5 # 50% vector score, 50% keyword score
+TOP_K_RETRIEVAL = 10
+TOP_K_RESULTS = 5 # Retrieve the top 5 results from hybrid search
+HYBRID_SEARCH_ALPHA = 0.5 # Balance between vector and keyword search
 
 # --- Caching & Server ---
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
-print(REDIS_URL)
-PORT = int(os.getenv("PORT", 8000))
+PORT = int(os.getenv("PORT", 10000))
 
 # --- Prompt Template for Final Answer Generation ---
 PROMPT_TEMPLATE = """
