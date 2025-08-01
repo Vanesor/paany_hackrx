@@ -1,14 +1,27 @@
 import redis
 import pickle
 import logging
-from config import REDIS_URL
+from config import REDIS_URL, REDIS_DISABLED
 
 logger = logging.getLogger("cache")
 
-redis_client = redis.from_url(REDIS_URL, decode_responses=False)
+if not REDIS_DISABLED:
+    try:
+        redis_client = redis.from_url(REDIS_URL, decode_responses=False)
+        logger.info(f"Redis client initialized with URL: {REDIS_URL}")
+    except Exception as e:
+        logger.error(f"Failed to initialize Redis client: {str(e)}")
+        redis_client = None
+else:
+    logger.info("Redis is disabled by configuration")
+    redis_client = None
 
 def set_cached_data(key: str, data: object):
     """Serializes a Python object using pickle and stores it in Redis."""
+    if REDIS_DISABLED or redis_client is None:
+        logger.info("Cache write skipped (Redis disabled)")
+        return
+        
     logger.info(f"Caching data for key: {key[:50]}...")
     
     try:
@@ -31,8 +44,12 @@ def set_cached_data(key: str, data: object):
     except Exception as e:
         logger.error(f"Unexpected error during caching: {str(e)}")
 
-def get_cached_data(key: str) -> object | None:
+def get_cached_data(key: str) -> object:
     """Retrieves and deserializes an object from Redis."""
+    if REDIS_DISABLED or redis_client is None:
+        logger.info("Cache read skipped (Redis disabled)")
+        return None
+        
     logger.info(f"Retrieving cached data for key: {key[:50]}...")
     
     try:
@@ -58,7 +75,7 @@ def get_cached_data(key: str) -> object | None:
             logger.info(f"Cache hit: Data retrieved in {end_time - start_time:.3f} seconds")
             
             # Try to log some info about what was retrieved
-            if isinstance(data, tuple) and len(data) == 2:
+            if isinstance(data, tuple) and len(data) >= 2:
                 logger.debug(f"Retrieved tuple with {len(data[1])} chunks")
                 
             return data
