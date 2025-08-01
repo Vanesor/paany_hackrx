@@ -1,22 +1,44 @@
-# Dockerfile
+# Dockerfile using best practices
 
-# 1. Use an official Python runtime as a parent image
-FROM python:3.11-slim
+# --- Stage 1: The Builder ---
+# Use a specific version for reproducibility
+FROM python:3.11.9-slim-bookworm as builder
 
-# 2. Set the working directory in the container
+# Set up the virtual environment
+WORKDIR /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Install dependencies
+# Using --no-cache-dir reduces layer size
+COPY requirements.txt .
+RUN python -m venv . && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# --- Stage 2: The Runner ---
+FROM python:3.11.9-slim-bookworm
+
 WORKDIR /app
 
-# 3. Copy the dependency file and install dependencies
-# This is done in a separate step to leverage Docker's layer caching.
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy the virtual environment from the builder
+COPY --from=builder /opt/venv /opt/venv
 
-# 4. Copy the rest of your application code into the container
-COPY . .
+# Create a non-root user to run the application
+RUN useradd --create-home appuser
+USER appuser
 
-# 5. Expose the port the app runs on
-EXPOSE 8000
+# Copy only the necessary application files, not the whole directory
+COPY --chown=appuser:appuser . .
 
-# 6. Define the command to run your app using uvicorn
-#    --host 0.0.0.0 makes the server accessible from outside the container.
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Activate the virtual environment
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Set default port (can be overridden by environment variable)
+ENV PORT=10000
+
+# Expose the port and define the healthcheck
+EXPOSE $PORT
+HEALTHCHECK CMD curl --fail http://localhost:$PORT/api/health || exit 1
+CMD ["python", "main.py"]
